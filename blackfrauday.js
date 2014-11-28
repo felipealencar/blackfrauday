@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 var url =  "http://sistemas.procon.sp.gov.br/evitesite/list/evitesite.php?action=list&jtStartIndex=0&jtPageSize=600&jtSorting=strSite%20ASC";
 var sitesProcon = [];
-var i = 0;
 function getBlockedSites(){
 	$.getJSON(url, null, function(records) {
 		records["Records"].forEach(function(entry) {
@@ -21,24 +20,13 @@ function getBlockedSites(){
 				var uri = new URI(details.url);
 				var i=0;
 				if(i==0){
-					
+					//Add some interaction with the user
 					i++;	 
 				}
-				if(sitesProcon.indexOf(uri.hostname()) >= 0)
+				
+				//Verify if it is a short URL (needs a review) && Verify if the url requested is suspected.
+				if((uri.hostname().length > 7) && (sitesProcon.indexOf(uri.hostname()) >= 0))
 					return { cancel: true };
-				// function endsWith(str, suffix) {
-					// return str.indexOf(suffix, str.length - suffix.length) !== -1;
-				// }
-				// var hostname = URI(details.url).hostname();
-				// var cancel = false;
-				// for(var index in sitesProcon) {
-					// if(URI(sitesProcon[index]).equals(hostname) === true ) {
-						// cancel = true;
-						// break;
-					// }
-				// }
-				// if(cancel) {
-				// }
 			},
 			{urls: ["<all_urls>"]},
 			["blocking"]
