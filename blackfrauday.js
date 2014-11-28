@@ -3,30 +3,42 @@
 // found in the LICENSE file.
 var url =  "http://sistemas.procon.sp.gov.br/evitesite/list/evitesite.php?action=list&jtStartIndex=0&jtPageSize=600&jtSorting=strSite%20ASC";
 var sitesProcon = [];
-
+var i = 0;
 function getBlockedSites(){
 	$.getJSON(url, null, function(records) {
 		records["Records"].forEach(function(entry) {
-			sitesProcon.push('www.'+entry["strSite"]);
+			if(entry["strSite"].length > 0){
+				sitesProcon.push(entry["strSite"]);
+				sitesProcon.push('http://'+entry["strSite"]+"/*");
+				sitesProcon.push('www.'+entry["strSite"]+"/*");
+			}
+			
 		});
 	}).done(function() {
+		sitesProcon = sitesProcon.join(', ');
 		chrome.webRequest.onBeforeRequest.addListener(
 			function(details) {
-				function endsWith(str, suffix) {
-					return str.indexOf(suffix, str.length - suffix.length) !== -1;
+				var uri = new URI(details.url);
+				var i=0;
+				if(i==0){
+					
+					i++;	 
 				}
-				var hostname = URI(details.url).hostname();
-				var cancel = false;
-				for(var index in sitesProcon) {
-					if( endsWith(hostname, sitesProcon[index]) ) {
-						alert("O site que você tentou acessar não é permitido pela extensão Black Frauday.");
-						cancel = true;
-						break;
-					}
-				}
-				if(cancel) {
-				}
-				return { cancel: cancel };
+				if(sitesProcon.indexOf(uri.hostname()) >= 0)
+					return { cancel: true };
+				// function endsWith(str, suffix) {
+					// return str.indexOf(suffix, str.length - suffix.length) !== -1;
+				// }
+				// var hostname = URI(details.url).hostname();
+				// var cancel = false;
+				// for(var index in sitesProcon) {
+					// if(URI(sitesProcon[index]).equals(hostname) === true ) {
+						// cancel = true;
+						// break;
+					// }
+				// }
+				// if(cancel) {
+				// }
 			},
 			{urls: ["<all_urls>"]},
 			["blocking"]
@@ -37,4 +49,6 @@ function getBlockedSites(){
 $(document).ready(function() {
 	getBlockedSites();
 });
+
+
 
